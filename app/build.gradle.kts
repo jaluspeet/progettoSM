@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.activity)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -59,9 +60,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.9.0")
-    implementation("androidx.camera:camera-core:1.2.2")
-    implementation("androidx.camera:camera-camera2:1.2.2")
-    implementation("androidx.camera:camera-lifecycle:1.2.2")
-    implementation("androidx.camera:camera-view:1.2.2")
-    implementation("androidx.camera:camera-extensions:1.2.2")
+    implementation("androidx.camera:camera-core:1.4.2")
+    implementation("androidx.camera:camera-camera2:1.4.2")
+    implementation("androidx.camera:camera-lifecycle:1.4.2")
+    implementation("androidx.camera:camera-view:1.4.2")
+    implementation("androidx.camera:camera-extensions:1.4.2")
 }

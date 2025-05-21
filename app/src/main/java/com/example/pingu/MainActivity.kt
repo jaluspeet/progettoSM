@@ -5,8 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -15,15 +19,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,34 +48,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppEntry() {
     PinguTheme {
-        var cameraPermissionStatus by remember { mutableStateOf<PermissionStatus?>(null) }
         val context = LocalContext.current
-
-        // rememberPermissionState will invoke onPermissionResult with the initial status
-        // and after any permission request.
-        val cameraPermissionState = rememberPermissionState(
+        val cameraPermissionHandler = rememberPermissionState(
             permission = Manifest.permission.CAMERA
-        ) { status -> // This callback updates our local state
-            cameraPermissionStatus = status
-        }
+        )
 
-        // LaunchedEffect to request permission if it's not initially granted.
-        // This runs once when AppEntry is first composed or if cameraPermissionState changes.
-        // We only want to auto-request if the status determined by rememberPermissionState is DENIED initially.
-        // If it's GRANTED, the UI will update through the callback.
-        // If it's PERMANENTLY_DENIED or SHOW_RATIONALE from a previous session,
-        // we might not want to auto-request without user interaction.
-        LaunchedEffect(cameraPermissionState.status) { // Re-run if the initial status from PermissionState changes
-            if (cameraPermissionState.status == PermissionStatus.DENIED && cameraPermissionStatus == null) {
-                // If the initial status is DENIED and we haven't set our local status yet,
-                // trigger a request.
-                // Note: The 'cameraPermissionStatus == null' check prevents re-requesting if the user
-                // explicitly denies it and the status becomes DENIED again.
-                cameraPermissionState.launchPermissionRequest()
-            } else if (cameraPermissionStatus == null) {
-                // If not DENIED initially (e.g. GRANTED, or other states from previous interaction)
-                // and local status is still null, set it from cameraPermissionState.
-                cameraPermissionStatus = cameraPermissionState.status
+        LaunchedEffect(cameraPermissionHandler.status) {
+            if (cameraPermissionHandler.status == PermissionStatus.DENIED) {
+                cameraPermissionHandler.launchPermissionRequest()
             }
         }
 
@@ -84,27 +66,24 @@ fun AppEntry() {
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                when (cameraPermissionStatus) {
+                when (cameraPermissionHandler.status) {
                     PermissionStatus.GRANTED -> {
                         CameraPreviewScreen(modifier = Modifier.fillMaxSize())
                     }
+
                     PermissionStatus.DENIED,
                     PermissionStatus.SHOW_RATIONALE,
                     PermissionStatus.PERMANENTLY_DENIED -> {
-                        GrantPermissionButton(
-                            currentStatus = cameraPermissionStatus ?: PermissionStatus.DENIED, // Provide a default
-                            onRequest = {
-                                if (cameraPermissionStatus == PermissionStatus.PERMANENTLY_DENIED) {
+                        PermissionRequestUI(
+                            status = cameraPermissionHandler.status,
+                            onRequestPermission = {
+                                if (cameraPermissionHandler.status == PermissionStatus.PERMANENTLY_DENIED) {
                                     openAppSettings(context)
                                 } else {
-                                    cameraPermissionState.launchPermissionRequest()
+                                    cameraPermissionHandler.launchPermissionRequest()
                                 }
                             }
                         )
-                    }
-                    null -> { // Initializing or waiting for first status from rememberPermissionState
-                        Text("Checking camera permission...")
-                        // The LaunchedEffect above handles the transition from this state.
                     }
                 }
             }
@@ -112,22 +91,44 @@ fun AppEntry() {
     }
 }
 
+/**
+ * A composable that displays UI for requesting permission.
+ * It includes an explanation text and a button to grant permission or open settings.
+ */
 @Composable
-fun GrantPermissionButton(currentStatus: PermissionStatus, onRequest: () -> Unit) {
-    Button(
-        onClick = onRequest,
-        modifier = Modifier.size(width = 300.dp, height = 80.dp),
-        elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
+fun PermissionRequestUI(
+    status: PermissionStatus,
+    onRequestPermission: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = if (currentStatus == PermissionStatus.PERMANENTLY_DENIED) "OPEN SETTINGS" else "GRANT CAMERA PERMISSION",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            text = "How are you expecting to play without the camera? I swear we aren't spying on you!",
+            textAlign = TextAlign.Center,
+            fontSize = 16.sp,
+            lineHeight = 22.sp
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onRequestPermission,
+            modifier = Modifier.size(width = 300.dp, height = 70.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 5.dp, pressedElevation = 8.dp)
+        ) {
+            Text(
+                text = if (status == PermissionStatus.PERMANENTLY_DENIED) "OPEN SETTINGS" else "GRANT CAMERA PERMISSION",
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
     }
 }
-
 
 @Composable
 fun CameraPreviewScreen(modifier: Modifier = Modifier) {
@@ -135,8 +136,6 @@ fun CameraPreviewScreen(modifier: Modifier = Modifier) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraController = remember { LifecycleCameraController(context) }
 
-    // Re-bind if lifecycleOwner or cameraController changes.
-    // In this simple case, lifecycleOwner is the main trigger.
     LaunchedEffect(lifecycleOwner, cameraController) {
         cameraController.bindToLifecycle(lifecycleOwner)
     }
@@ -151,16 +150,11 @@ fun CameraPreviewScreen(modifier: Modifier = Modifier) {
     )
 }
 
-// --- Previews ---
-
 @Preview(showBackground = true, name = "App - Camera Granted")
 @Composable
 fun AppEntryPreview_PermissionGranted() {
     PinguTheme {
-        // Simulate AppEntry showing CameraPreviewScreen when permission is GRANTED
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CameraPreviewScreen(modifier = Modifier.fillMaxSize())
-        }
+        CameraPreviewScreen(modifier = Modifier.fillMaxSize())
     }
 }
 
@@ -168,9 +162,7 @@ fun AppEntryPreview_PermissionGranted() {
 @Composable
 fun AppEntryPreview_NeedsPermissionDenied() {
     PinguTheme {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            GrantPermissionButton(currentStatus = PermissionStatus.DENIED, onRequest = {})
-        }
+        PermissionRequestUI(status = PermissionStatus.DENIED, onRequestPermission = {})
     }
 }
 
@@ -178,9 +170,15 @@ fun AppEntryPreview_NeedsPermissionDenied() {
 @Composable
 fun AppEntryPreview_NeedsPermissionPermanentlyDenied() {
     PinguTheme {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            GrantPermissionButton(currentStatus = PermissionStatus.PERMANENTLY_DENIED, onRequest = {})
-        }
+        PermissionRequestUI(status = PermissionStatus.PERMANENTLY_DENIED, onRequestPermission = {})
+    }
+}
+
+@Preview(showBackground = true, name = "App - Needs Permission (Show Rationale)")
+@Composable
+fun AppEntryPreview_NeedsPermissionShowRationale() {
+    PinguTheme {
+        PermissionRequestUI(status = PermissionStatus.SHOW_RATIONALE, onRequestPermission = {})
     }
 }
 
