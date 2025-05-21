@@ -21,4 +21,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "pingu"
 include(":app")
-include(":core_permissions")
+
+
+include(":core:login")
+include(":core:permission")

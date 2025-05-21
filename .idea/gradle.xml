@@ -11,7 +11,9 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/core_permissions" />
+            <option value="$PROJECT_DIR$/core" />
+            <option value="$PROJECT_DIR$/core/login" />
+            <option value="$PROJECT_DIR$/core/permission" />
           </set>
         </option>
       </GradleProjectSettings>
