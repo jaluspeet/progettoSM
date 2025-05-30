@@ -23,5 +23,4 @@ rootProject.name = "pingu"
 include(":app")
 
 
-include(":core:login")
-include(":core:permission")
+include(":common:permission")

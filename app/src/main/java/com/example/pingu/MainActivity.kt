@@ -35,6 +35,11 @@ import androidx.camera.view.PreviewView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.pingu.ui.theme.PinguTheme
 
+import com.example.permission.PermissionStatus
+import com.example.permission.rememberPermissionState
+import com.example.permission.openAppSettings
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
