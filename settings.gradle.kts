@@ -24,3 +24,5 @@ include(":app")
 
 
 include(":common:permission")
+include(":feature:camera")
+include(":feature:settings")
