@@ -1,5 +1,7 @@
 name: build apk
 
+on: [push]
+
 env:
   main_project_module: app
 
