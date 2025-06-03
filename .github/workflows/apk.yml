@@ -5,12 +5,6 @@ on: [push]
 env:
   main_project_module: app
 
-on:
-  push:
-    branches:
-      - 'release/**'
-  workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
