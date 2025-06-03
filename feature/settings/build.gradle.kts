@@ -37,6 +37,8 @@ android {
 }
 
 dependencies {
+    implementation (project(":common:login"))
+
     implementation(libs.androidx.core.ktx)
 
     implementation(platform(libs.androidx.compose.bom))
@@ -47,4 +49,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     implementation(libs.androidx.lifecycle.runtime.compose)
+
+    implementation (libs.play.services.auth)
+    implementation (libs.androidx.activity.ktx)
 }

@@ -33,6 +33,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+
     buildFeatures {
         compose = true
     }
@@ -42,10 +43,12 @@ dependencies {
 
     // common
     implementation(project(":common:permission"))
+    implementation(project(":common:game"))
 
     // feature
     implementation(project(":feature:camera"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:scoreboard"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
