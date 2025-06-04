@@ -86,6 +86,7 @@ fun MainAppStructure() {
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
+                    .padding(top = 16.dp)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
