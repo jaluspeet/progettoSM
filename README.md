@@ -24,7 +24,7 @@ L’obiettivo è mettere in pratica principi di progettazione del software, modu
 
 ## Descrizione della struttura dei sorgenti
 
-La struttura principale della repository è la seguente 
+La struttura principale della progetto è la seguente 
 
 ```
 progettoSM/
