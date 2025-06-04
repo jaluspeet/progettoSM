@@ -15,6 +15,8 @@
             <option value="$PROJECT_DIR$/common/game" />
             <option value="$PROJECT_DIR$/common/login" />
             <option value="$PROJECT_DIR$/common/permission" />
+            <option value="$PROJECT_DIR$/common/rpsmodel" />
+            <option value="$PROJECT_DIR$/common/storage" />
             <option value="$PROJECT_DIR$/feature" />
             <option value="$PROJECT_DIR$/feature/camera" />
             <option value="$PROJECT_DIR$/feature/scoreboard" />

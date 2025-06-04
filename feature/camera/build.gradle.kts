@@ -37,6 +37,10 @@ android {
 }
 
 dependencies {
+    implementation(project(":common:game"))
+    implementation(project(":common:rpsmodel"))
+    implementation(project(":common:storage"))
+
     implementation(libs.androidx.core.ktx)
 
     implementation(platform(libs.androidx.compose.bom))
@@ -44,8 +48,12 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.activity.compose)
-
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.compose.material3.material3)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.ui)
+    implementation(libs.foundation)
 
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)

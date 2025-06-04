@@ -22,16 +22,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.common.game.RpsMatch
-import com.example.common.game.RpsChoice
-import com.example.common.game.RpsResult
+import com.example.pingu.ui.theme.PinguTheme
+
 import com.example.common.permission.PermissionStatus
 import com.example.common.permission.openAppSettings
 import com.example.common.permission.rememberPermissionState
 import com.example.feature.camera.CameraScreen
-import com.example.feature.scoreboard.ScoreboardScreen
+import com.example.feature.scoreboard.ScoreboardRoute
 import com.example.feature.settings.SettingsScreen
-import com.example.pingu.ui.theme.PinguTheme
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Camera : Screen("camera", "Camera", Icons.Filled.ThumbUp)
@@ -115,16 +113,8 @@ fun MainAppStructure() {
                     }
 
                     Screen.Scoreboard -> {
-                        // Dummy match history for now
-                        val dummyMatches = listOf(
-                            RpsMatch(RpsChoice.ROCK, RpsChoice.SCISSORS, RpsResult.WIN),
-                            RpsMatch(RpsChoice.PAPER, RpsChoice.ROCK, RpsResult.WIN),
-                            RpsMatch(RpsChoice.SCISSORS, RpsChoice.SCISSORS, RpsResult.DRAW)
-                        )
-                        ScoreboardScreen(
-                            modifier = Modifier.fillMaxSize(),
-                            matchHistory = dummyMatches
-                        )
+                        // Load actual history from local storage
+                        ScoreboardRoute()
                     }
 
                     Screen.Settings -> {
