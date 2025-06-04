@@ -8,7 +8,7 @@ L’obiettivo è mettere in pratica principi di progettazione del software, modu
 ## Funzionalità principali
 
 - **Login con Google:**  
-  L'app utilizza l'integrazione delle Google Sign-In API per consentire agli utenti di accedere in modo semplice e sicuro. Dopo il login, ogni utente ha accesso a uno storico personale delle partite che sono state disputate.
+  L'app utilizza l'integrazione delle Google Sign-In API per consentire agli utenti di accedere in modo semplice e sicuro.
 
 - **Accesso alla fotocamera:**  
   Dopo aver ottenuto i permessi, l'app attiva la fotocamera per acquisire in tempo reale l'immagine della mano dell'utente.
@@ -30,17 +30,17 @@ La struttura principale della progetto è la seguente
 progettoSM/
 │
 ├── app/
-│   └── MainActivity.kt
+│   └── main/
 │
 ├── common/
-│   ├── Game.kt
-│   ├── Login.kt
-│   └── Permission.kt
+│   ├── game/
+│   ├── login/
+│   └── permission/
 │
 └── feature/
-    ├── camera.kt
-    ├── scoreboard.kt
-    └── settings.kt
+    ├── camera/
+    ├── scoreboard/
+    └── settings/
 ```
  ## APP
  La cartella `app` rappresenta il modulo principale dell’applicazione Android. All’interno di questa cartella si trovano:
@@ -62,21 +62,21 @@ progettoSM/
 
   #### 1. `camera/`
   Questa sottocartella contiene il codice relativo alla gestione della fotocamera e al riconoscimento dei gesti della mano.  
-  *Ruolo principale:**
+  **Ruolo principale:**
 - Attivare la fotocamera del dispositivo.
 - Acquisire in tempo reale le immagini della mano dell’utente.
 - Interfacciarsi con il modello PyTorch per riconoscere il gesto (sasso, carta o forbice).
 - Fornire una UI reattiva e accessibile tramite Jetpack Compose per la parte di gioco.
 
 #### 2. `scoreboard/`
-  Questa sottocartella contiene la logica e la UI per la gestione dello storico delle partite e dei risultati.  
+  Questo modulo contiene la logica e la UI per la gestione dello storico delle partite e dei risultati.  
   **Ruolo principale:**
   - Salvare localmente i dati di ogni partita giocata (mossa utente, mossa computer, esito).
   - Visualizzare lo storico delle partite tramite un’interfaccia dedicata.
   - Permettere all’utente di consultare le proprie performance nel tempo.
 
 #### 3. `settings/`
-  Questa sottocartella gestisce le impostazioni e le preferenze dell’utente.  
+  Questo modulo gestisce le impostazioni e le preferenze dell’utente.  
   **Ruolo principale:**
   - Offrire una schermata dove l’utente può modificare le proprie preferenze ( tema, lingua, ecc.).
   - Gestire eventuali configurazioni relative al login e alla gestione dei permessi.
@@ -84,20 +84,20 @@ progettoSM/
 ---
 
 ## COMMON
-   questa sottocartella contiene codice riutilizzabile e condiviso tra più parti dell'app, come utility, gestione delle permissioni, autenticazione (es. Google Sign-In), 
+   questo modulo contiene codice riutilizzabile e condiviso tra più parti dell'app, come utility, gestione delle permissioni, autenticazione (es. Google Sign-In), 
    estensioni e costanti, per mantenere il progetto organizzato e modulare.
 
 
 
 #### 1. `login/`
-  Questa sottocartella gestisce tutte le funzionalità relative all’autenticazione degli utenti, in particolare tramite Google Sign-In.
+  Questo modulo gestisce tutte le funzionalità relative all’autenticazione degli utenti, in particolare tramite Google Sign-In.
 
   - Implementare il flusso di login con Google, gestendo la richiesta, la risposta e il salvataggio delle informazioni dell’utente autenticato.
   - Fornire funzioni o componenti riutilizzabili per mostrare lo stato di autenticazione e gestire la sessione utente.
  
 
 #### 2. `permission/`
-   Questa sottocartella centralizza la logica per la gestione dei permessi Android, in particolare per l’accesso alla fotocamera.  
+   Questo modulo centralizza la logica per la gestione dei permessi Android, in particolare per l’accesso alla fotocamera.  
   - Gestire la richiesta di permessi runtime come CAMERA.
   - Fornire utilities per controllare lo stato dei permessi e reagire ai cambiamenti (es. permesso negato, permanentemente negato, ecc.).
   
@@ -116,17 +116,10 @@ L’interfaccia è realizzata interamente con Jetpack Compose, garantendo una UI
 ### 4. Integrazione di machine learning su dispositivo mobile
 Il progetto integra un modello PyTorch per il riconoscimento dei gesti tramite la fotocamera, mostrando la capacità di eseguire inferenza ML direttamente su dispositivi mobili.
 
-### 5. Autenticazione sicura con Google Sign-In
-L’autenticazione tramite Google Sign-In offre sicurezza, praticità e una gestione personalizzata dello storico partite per ogni utente.
-
 
 ## Possibili migliorie
 
-- Scrittura di una documentazione più dettagliata per ogni modulo/feature.
 - Aggiunta di test automatici per migliorare l’affidabilità del software.
 - Miglioramento delle interfacce utente e dell’esperienza d’uso.
 - Ottimizzazione delle performance nelle parti critiche dell’applicazione.
-- Introduzione di strumenti di analisi statica del codice e code coverage.
 - Possibile migrazione o supporto a ulteriori piattaforme.
-
----
