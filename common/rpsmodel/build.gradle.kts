@@ -35,7 +35,11 @@ android {
 dependencies {
     implementation(project(":common:game"))
 
-    implementation(libs.pytorch.android.lite)
-    implementation(libs.pytorch.android.torchvision.lite)
+    implementation("org.pytorch:executorch-android:0.6.0-rc1")
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    //    implementation("org.pytorch:pytorch_android:1.13.1")
+    //    implementation("org.pytorch:pytorch_android_torchvision:1.13.1")
+    //    implementation ("org.pytorch:pytorch_android:1.6.0-SNAPSHOT")
+    //    implementation ("org.pytorch:pytorch_android_torchvision:1.6.0-SNAPSHOT")
 }

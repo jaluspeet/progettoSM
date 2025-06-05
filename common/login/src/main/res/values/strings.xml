@@ -1,3 +1,4 @@
 <resources>
+    <string name="google_web_client_id_modern">707983153911-98jolbil44r8almvqp6jibna89rvcu0k.apps.googleusercontent.com</string>
     <string name="google_web_client_id">707983153911-t7lvsp85i88as9blcmpfnr9lrj1vvi2v.apps.googleusercontent.com</string>
 </resources>

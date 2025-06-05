@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 
 class RpsCameraViewModel(app: Application) : AndroidViewModel(app) {
     private val classifier = RpsModelClassifier(app)
-    // no cast to PinguApplication, just pull from ServiceLocator
     private val repository = ServiceLocator.provideMatchHistoryRepository()
 
     private val _lastMatch = MutableStateFlow<RpsMatch?>(null)

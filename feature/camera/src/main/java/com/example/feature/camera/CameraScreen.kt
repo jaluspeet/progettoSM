@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Rect
 import android.graphics.YuvImage
 import android.graphics.ImageFormat
+import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
@@ -21,11 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
-import androidx.lifecycle.compose.LocalLifecycleOwner // Updated import
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.common.game.RpsChoice
 import com.example.common.game.RpsMatch
 import java.io.ByteArrayOutputStream
+import java.nio.ByteBuffer
 
 @Composable
 fun CameraScreen(
@@ -38,18 +40,15 @@ fun CameraScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val match by viewModel.lastMatch.collectAsState(initial = null) // Changed var to val
+    val match by viewModel.lastMatch.collectAsState(initial = null)
 
-    // Set up the Camera controller
     val cameraController = remember {
         LifecycleCameraController(context).apply {
-            // imageCaptureEnabled = true // Corrected property access
             bindToLifecycle(lifecycleOwner)
         }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        // PreviewView to show camera feed
         AndroidView(
             factory = { ctx ->
                 PreviewView(ctx).apply {
@@ -59,12 +58,11 @@ fun CameraScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Capture button
         Button(
             onClick = {
                 cameraController.takePicture(
-                    ContextCompat.getMainExecutor(context), // Used ContextCompat
-                    object : ImageCapture.OnImageCapturedCallback() { // Corrected callback type
+                    ContextCompat.getMainExecutor(context),
+                    object : ImageCapture.OnImageCapturedCallback() {
                         override fun onCaptureSuccess(image: ImageProxy) {
                             val bitmap = imageProxyToBitmap(image)
                             image.close()
@@ -84,7 +82,6 @@ fun CameraScreen(
             Text("Capture")
         }
 
-        // Show result in a dialog
         match?.let { result ->
             AlertDialog(
                 onDismissRequest = { viewModel.reset() },
@@ -111,24 +108,49 @@ fun CameraScreen(
 }
 
 private fun imageProxyToBitmap(image: ImageProxy): Bitmap? {
-    val yBuffer = image.planes[0].buffer
-    val uBuffer = image.planes[1].buffer
-    val vBuffer = image.planes[2].buffer
+    return try {
+        when (image.format) {
+            ImageFormat.JPEG -> {
+                val buffer: ByteBuffer = image.planes[0].buffer
+                val bytes = ByteArray(buffer.remaining())
+                buffer.get(bytes)
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            }
+            ImageFormat.YUV_420_888 -> {
+                // Basic YUV_420_888 to Bitmap conversion
+                // For higher quality or more options, consider a library or more advanced conversion
+                val yBuffer = image.planes[0].buffer // Y
+                val uBuffer = image.planes[1].buffer // U
+                val vBuffer = image.planes[2].buffer // V
 
-    val ySize = yBuffer.remaining()
-    val uSize = uBuffer.remaining()
-    val vSize = vBuffer.remaining()
-    val nv21 = ByteArray(ySize + uSize + vSize)
+                val ySize = yBuffer.remaining()
+                val uSize = uBuffer.remaining()
+                val vSize = vBuffer.remaining()
 
-    yBuffer.get(nv21, 0, ySize)
-    vBuffer.get(nv21, ySize, vSize)
-    uBuffer.get(nv21, ySize + vSize, uSize)
+                val nv21 = ByteArray(ySize + uSize + vSize)
 
-    val yuv = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-    val outStream = ByteArrayOutputStream().apply {
-        yuv.compressToJpeg(Rect(0, 0, image.width, image.height), 100, this)
+                yBuffer.get(nv21, 0, ySize)
+                vBuffer.get(nv21, ySize, vSize) // In NV21, V comes before U in the CbCr plane
+                uBuffer.get(nv21, ySize + vSize, uSize)
+
+
+                val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+                val out = ByteArrayOutputStream()
+                yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 100, out)
+                val imageBytes = out.toByteArray()
+                BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            }
+            else -> {
+                Log.e("CameraScreen", "Unsupported image format: ${image.format}")
+                null
+            }
+        }
+    } catch (e: Exception) {
+        Log.e("CameraScreen", "Error converting ImageProxy to Bitmap", e)
+        null
+    } finally {
+        image.close() // Ensure image is always closed
     }
-    return BitmapFactory.decodeByteArray(outStream.toByteArray(), 0, outStream.size())
 }
 
 private fun RpsChoice.toEmoji(): String = when (this) {
