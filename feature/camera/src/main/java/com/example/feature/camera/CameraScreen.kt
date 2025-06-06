@@ -3,18 +3,30 @@ package com.example.feature.camera
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.graphics.YuvImage
-import android.graphics.ImageFormat
 import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,7 +37,6 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.common.game.RpsChoice
-import com.example.common.game.RpsMatch
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -70,7 +81,7 @@ fun CameraScreen(
                         }
 
                         override fun onError(exception: ImageCaptureException) {
-                            // TODO: handle errors
+                            Log.e("CameraScreen", "Image capture failed", exception)
                         }
                     }
                 )
@@ -117,11 +128,9 @@ private fun imageProxyToBitmap(image: ImageProxy): Bitmap? {
                 BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
             }
             ImageFormat.YUV_420_888 -> {
-                // Basic YUV_420_888 to Bitmap conversion
-                // For higher quality or more options, consider a library or more advanced conversion
-                val yBuffer = image.planes[0].buffer // Y
-                val uBuffer = image.planes[1].buffer // U
-                val vBuffer = image.planes[2].buffer // V
+                val yBuffer = image.planes[0].buffer
+                val uBuffer = image.planes[1].buffer
+                val vBuffer = image.planes[2].buffer
 
                 val ySize = yBuffer.remaining()
                 val uSize = uBuffer.remaining()
@@ -130,9 +139,8 @@ private fun imageProxyToBitmap(image: ImageProxy): Bitmap? {
                 val nv21 = ByteArray(ySize + uSize + vSize)
 
                 yBuffer.get(nv21, 0, ySize)
-                vBuffer.get(nv21, ySize, vSize) // In NV21, V comes before U in the CbCr plane
+                vBuffer.get(nv21, ySize, vSize)
                 uBuffer.get(nv21, ySize + vSize, uSize)
-
 
                 val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
                 val out = ByteArrayOutputStream()
@@ -149,7 +157,7 @@ private fun imageProxyToBitmap(image: ImageProxy): Bitmap? {
         Log.e("CameraScreen", "Error converting ImageProxy to Bitmap", e)
         null
     } finally {
-        image.close() // Ensure image is always closed
+        image.close()
     }
 }
 

@@ -1,9 +1,20 @@
 package com.example.feature.scoreboard
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,12 +23,6 @@ import com.example.common.game.RpsChoice
 import com.example.common.game.RpsMatch
 import com.example.common.game.RpsResult
 
-/**
- * Displays the list of past rock-paper-scissors matches.
- *
- * @param matchHistory the list of matches to display, most recent first.
- * @param modifier optional Compose modifier.
- */
 @Composable
 fun ScoreboardScreen(
     matchHistory: List<RpsMatch>,
@@ -67,14 +72,12 @@ private fun MatchRow(match: RpsMatch) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Center lightning emoji
             Text(
                 text = "⚡",
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.align(Alignment.Center)
             )
 
-            // Player choice on the left
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.align(Alignment.CenterStart)
@@ -87,7 +90,6 @@ private fun MatchRow(match: RpsMatch) {
                 )
             }
 
-            // AI choice on the right
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.align(Alignment.CenterEnd)
@@ -103,7 +105,6 @@ private fun MatchRow(match: RpsMatch) {
     }
 }
 
-/** Convert an RpsChoice to its emoji representation. */
 private fun RpsChoice.toEmoji(): String = when (this) {
     RpsChoice.ROCK -> "🪨"
     RpsChoice.PAPER -> "📄"
