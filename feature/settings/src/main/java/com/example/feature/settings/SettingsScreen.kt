@@ -1,7 +1,7 @@
 package com.example.feature.settings
 
+import android.app.Activity
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,12 +26,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.common.login.GoogleSignInHandler
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 
 @Composable
 fun SettingsScreen(
@@ -39,17 +41,24 @@ fun SettingsScreen(
     onNavigateToAppSettings: () -> Unit
 ) {
     val context = LocalContext.current
-    val signInHelper = remember { GoogleSignInHandler(context) }
+    val coroutineScope = rememberCoroutineScope()
 
-    var currentAccount by remember { mutableStateOf(signInHelper.currentAccount()) }
+    var currentGoogleUser by remember { mutableStateOf<GoogleIdTokenCredential?>(null) }
 
-    val loginLauncher = rememberLauncherForActivityResult(
-        contract = GoogleSignInHandler.SignInContract(),
-        onResult = { account ->
-            Log.d("Login", "Account: ${account?.email}, name: ${account?.displayName}")
-            currentAccount = account
-        }
-    )
+    val signInHelper = remember {
+        GoogleSignInHandler(
+            context = context,
+            coroutineScope = coroutineScope,
+            onSignInSuccess = { credential ->
+                Log.d("SettingsScreenLogin", "Sign-in success: Email: ${credential.id}, Name: ${credential.displayName}")
+                currentGoogleUser = credential
+            },
+            onSignInFailure = { exception ->
+                Log.e("SettingsScreenLogin", "Sign-in failure", exception)
+                currentGoogleUser = null
+            }
+        )
+    }
 
     var showAboutDialog by remember { mutableStateOf(false) }
 
@@ -59,22 +68,26 @@ fun SettingsScreen(
             .padding(top = 16.dp)
     ) {
         Text(
-            text = "Welcome, ${currentAccount?.displayName ?: "username"}!",
+            text = "Welcome, ${currentGoogleUser?.displayName ?: "username"}!",
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
         SettingsListItem(
-            title = if (currentAccount == null) "Login" else "Logout",
+            title = if (currentGoogleUser == null) "Login with Google" else "Logout",
             icon = Icons.Filled.Person,
             onClick = {
-                if (currentAccount == null) {
-                    loginLauncher.launch(Unit)
-                } else {
-                    signInHelper.signOut().addOnCompleteListener {
-                        currentAccount = null
+                if (currentGoogleUser == null) {
+                    if (context is Activity) {
+                        signInHelper.signIn()
+                    } else {
+                        Log.e("SettingsScreen", "Context is not an Activity, cannot start sign-in")
+
                     }
+                } else {
+                    signInHelper.signOut()
+                    currentGoogleUser = null
                 }
             }
         )
