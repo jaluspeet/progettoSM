@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":common:permission"))
     implementation(project(":common:game"))
     implementation(project(":common:storage"))
+    implementation(project(":common:rpsmodel"))
 
     // feature
     implementation(project(":feature:camera"))

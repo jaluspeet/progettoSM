@@ -1,11 +1,16 @@
 package com.example.feature.camera
 
 import android.app.Application
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.graphics.Rect
 import android.graphics.YuvImage
+import android.os.IBinder
 import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -24,9 +29,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,6 +45,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.common.game.RpsChoice
+import com.example.common.rpsmodel.RpsModelService
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -52,6 +61,26 @@ fun CameraScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val match by viewModel.lastMatch.collectAsState(initial = null)
+
+    // — bind to the inference service —
+    var modelService by remember { mutableStateOf<RpsModelService?>(null) }
+    val connection = remember {
+        object : ServiceConnection {
+            override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+                modelService = (binder as RpsModelService.LocalBinder).getService()
+            }
+            override fun onServiceDisconnected(name: ComponentName) {
+                modelService = null
+            }
+        }
+    }
+    DisposableEffect(context) {
+        val intent = Intent(context.applicationContext, RpsModelService::class.java)
+        context.applicationContext.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        onDispose {
+            context.applicationContext.unbindService(connection)
+        }
+    }
 
     val cameraController = remember {
         LifecycleCameraController(context).apply {
@@ -77,9 +106,12 @@ fun CameraScreen(
                         override fun onCaptureSuccess(image: ImageProxy) {
                             val bitmap = imageProxyToBitmap(image)
                             image.close()
-                            bitmap?.let { viewModel.classifyAndSave(it) }
+                            bitmap?.let { bm ->
+                                modelService?.classify(bm) { result ->
+                                    viewModel.handleMatch(result)
+                                } ?: Log.e("CameraScreen", "Service not bound, cannot classify")
+                            }
                         }
-
                         override fun onError(exception: ImageCaptureException) {
                             Log.e("CameraScreen", "Image capture failed", exception)
                         }
@@ -137,7 +169,6 @@ private fun imageProxyToBitmap(image: ImageProxy): Bitmap? {
                 val vSize = vBuffer.remaining()
 
                 val nv21 = ByteArray(ySize + uSize + vSize)
-
                 yBuffer.get(nv21, 0, ySize)
                 vBuffer.get(nv21, ySize, vSize)
                 uBuffer.get(nv21, ySize + vSize, uSize)

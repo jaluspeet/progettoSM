@@ -34,6 +34,7 @@ android {
 
 dependencies {
     implementation(project(":common:game"))
+    implementation(project(":common:storage"))
 
     implementation("org.pytorch:executorch-android:0.6.0-rc1")
     implementation(libs.androidx.core.ktx)
